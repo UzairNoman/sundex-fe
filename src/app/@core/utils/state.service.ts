@@ -1,12 +1,12 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { of as observableOf,  Observable,  BehaviorSubject } from 'rxjs';
+import { of as observableOf,  Observable,  BehaviorSubject, Subject } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
 
 import { NbLayoutDirectionService, NbLayoutDirection } from '@nebular/theme';
 
 @Injectable()
 export class StateService implements OnDestroy {
-
+  trafficSubj = new Subject<any>();
   protected layouts: any = [
     {
       name: 'One Column',

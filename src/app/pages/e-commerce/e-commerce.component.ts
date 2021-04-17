@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { NbSearchService, NbThemeService } from '@nebular/theme';
 import { UserActive, UserActivityData } from '../../@core/data/user-activity';
-import { takeWhile } from 'rxjs/operators';
+import { map, takeWhile } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { StateService } from '../../@core/utils';
 @Component({
   selector: 'ngx-ecommerce',
   templateUrl: './e-commerce.component.html',
@@ -17,23 +19,40 @@ export class ECommerceComponent {
   statuses:any;
   search = 'default';
   barOptions: any;
-  barData:any = [10, 52, 200, 334, 390, 330, 220,210,45,100,334, 390, 330, 220,210,45,34];
-
+  barData:any = [10, 52, 200, 43, 68, 85, 69,97,45,85,95, 49, 153, 92,54,45,34];
+  companyData=['BMW','Nestle'];
+  companyObj= {};
+  curatedStuff = {label:[], newObj : [{name: "", value:""}]};
   themeSubscription: any;
   pieOptions:any;
   spiderOptions:any;
+  public change = new Subject<string>();
+  sgdLabels: any = ['SDG1','SDG2','SDG3','SDG4','SDG5','SDG6','SDG7','SDG8','SDG9','SDG10','SDG11','SDG12','SDG13','SDG14','SDG15','SDG16','SDG17'];
 
   constructor(private themeService: NbThemeService,
               public httpService: HttpClient,
+              public stateService : StateService,
               public searchService: NbSearchService,
               private theme: NbThemeService,
               private userActivityService: UserActivityData) {
+                this.companyData.forEach(company => {
+                  let lowcompany = company.toLowerCase();
+                  this.getCSV(lowcompany).subscribe(data => {
+                    this.companyObj[lowcompany] = data;
+                    this.companyObj[lowcompany] = {data, filteredData : this.curateData(data.SDG)};
+                    this.spiderOptions.series[0].data.push({name:company,value:this.companyObj[lowcompany].data.SDG});
+                    this.stateService.trafficSubj.next({companySDG : this.companyObj[lowcompany].filteredData.newObj})
+
+                    console.log(this.companyObj);
+                  })
+                });
                 this.searchService.onSearchSubmit()
                 .subscribe((data: any) => {
                   console.log(data.term);
                   this.search = data.term;
-                  if(this.search != 'default')
-                    this.getCSV();
+                  this.change.next(this.search);
+                  // if(this.search != 'default')
+                  //   this.getCSV();
                 })
     this.getTweets();
     this.themeService.getJsTheme()
@@ -47,11 +66,137 @@ export class ECommerceComponent {
   
     
 
-    this.themeSubscription = this.theme.getJsTheme().subscribe(config => {
+    this.change.subscribe(searchText =>{
+      console.log(searchText,this.companyObj[searchText]);
+      let currentAssignment = this.companyObj[searchText.toLowerCase()];
+      this.themeSubscription = this.theme.getJsTheme().subscribe(config => {
+        const colors: any = config.variables;
+        const echarts: any = config.variables.echarts;
+        console.log(this.companyObj);
+        this.barOptions = {
+          backgroundColor: echarts.bg,
+          color: [colors.primaryLight],
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'shadow',
+            },
+          },
+          grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true,
+          },
+          xAxis: [
+            {
+              name: 'SDG Goals',
+              nameLocation: 'middle',
+              type: 'category',
+              data: ['1', '2', '3', '4', '5', '6', '7','8','9','10','11', '12', '13', '14', '15','16','17'],
+              axisTick: {
+                alignWithLabel: true,
+              },
+              axisLine: {
+                lineStyle: {
+                  color: echarts.axisLineColor,
+                },
+              },
+              axisLabel: {
+                textStyle: {
+                  color: echarts.textColor,
+                },
+              },
+            },
+          ],
+          yAxis: [
+            {
+              type: 'value',
+              axisLine: {
+                lineStyle: {
+                  color: echarts.axisLineColor,
+                },
+              },
+              splitLine: {
+                lineStyle: {
+                  color: echarts.splitLineColor,
+                },
+              },
+              axisLabel: {
+                textStyle: {
+                  color: echarts.textColor,
+                },
+              },
+            },
+          ],
+          series: [
+            {
+              name: 'Score',
+              type: 'bar',
+              barCategoryGap: '5%',
+              //barWidth: '30%',
+              data: currentAssignment.data.SDG,
+            },
+          ],
+        };
+        
+  
+        this.pieOptions = {
+          backgroundColor: echarts.bg,
+          color: [colors.warningLight, colors.infoLight, colors.dangerLight, colors.successLight, colors.primaryLight],
+          tooltip: {
+            trigger: 'item',
+            formatter: '{a} <br/>{b} : {c} ({d}%)',
+          },
+          legend: {
+            orient: 'vertical',
+            left: 'left',
+            data: currentAssignment.filteredData.label,
+            textStyle: {
+              color: echarts.textColor,
+            },
+          },
+          series: [
+            {
+              name: 'Countries',
+              type: 'pie',
+              radius: '80%',
+              center: ['50%', '50%'],
+              data: currentAssignment.filteredData.newObj,
+              itemStyle: {
+                emphasis: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: echarts.itemHoverShadowColor,
+                },
+              },
+              label: {
+                normal: {
+                  textStyle: {
+                    color: echarts.textColor,
+                  },
+                },
+              },
+              labelLine: {
+                normal: {
+                  lineStyle: {
+                    color: echarts.axisLineColor,
+                  },
+                },
+              },
+            },
+          ],
+        };
+  
 
+  
+  
+      });
+    })
+    this.themeSubscription = this.theme.getJsTheme().subscribe(config => {
       const colors: any = config.variables;
       const echarts: any = config.variables.echarts;
-
+      console.log(this.companyObj);
       this.barOptions = {
         backgroundColor: echarts.bg,
         color: [colors.primaryLight],
@@ -69,7 +214,7 @@ export class ECommerceComponent {
         },
         xAxis: [
           {
-            name: 'SGD Goals',
+            name: 'SDG Goals',
             nameLocation: 'middle',
             type: 'category',
             data: ['1', '2', '3', '4', '5', '6', '7','8','9','10','11', '12', '13', '14', '15','16','17'],
@@ -118,7 +263,7 @@ export class ECommerceComponent {
           },
         ],
       };
-
+      
 
       this.pieOptions = {
         backgroundColor: echarts.bg,
@@ -130,7 +275,7 @@ export class ECommerceComponent {
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['SGD1','SGD2','SGD3','SGD4','SGD5'],
+          data: this.curatedStuff.label,
           textStyle: {
             color: echarts.textColor,
           },
@@ -141,13 +286,7 @@ export class ECommerceComponent {
             type: 'pie',
             radius: '80%',
             center: ['50%', '50%'],
-            data: [
-              { value: 335, name: 'SGD1' },
-              { value: 310, name: 'SGD2' },
-              { value: 234, name: 'SGD3' },
-              { value: 135, name: 'SGD4' },
-              { value: 1548, name: 'SGD5' },
-            ],
+            data: this.curatedStuff.newObj,
             itemStyle: {
               emphasis: {
                 shadowBlur: 10,
@@ -178,7 +317,7 @@ export class ECommerceComponent {
         color: [colors.danger, colors.warning],
         tooltip: {},
         legend: {
-          data: ['BMW', 'Nestle'],
+          data: this.companyData,
           textStyle: {
             color: echarts.textColor,
           },
@@ -190,14 +329,23 @@ export class ECommerceComponent {
             },
           },
           indicator: [
-            { name: 'SGD1', max: 6500 },
-            { name: 'SGD2', max: 16000 },
-            { name: 'SGD3', max: 30000 },
-            { name: 'SGD4', max: 38000 },
-            { name: 'SGD5', max: 52000 },
-            { name: 'SGD6', max: 25000 },
-            { name: 'SGD7', max: 25000 },
-            { name: 'SGD8', max: 25000 },
+            { name: 'SDG1', max: 50 },
+            { name: 'SDG2', max: 50 },
+            { name: 'SDG3', max: 50 },
+            { name: 'SDG4', max: 50 },
+            { name: 'SDG5', max: 50 },
+            { name: 'SDG6', max: 50 },
+            { name: 'SDG7', max: 50 },
+            { name: 'SDG8', max: 50 },
+            { name: 'SDG9', max: 50 },
+            { name: 'SDG10', max: 50 },
+            { name: 'SDG11', max: 50 },
+            { name: 'SDG12', max: 50 },
+            { name: 'SDG13', max: 50 },
+            { name: 'SDG14', max: 50 },
+            { name: 'SDG15', max: 50 },
+            { name: 'SDG16', max: 50 },
+            { name: 'SDG17', max: 50 },
           ],
           splitArea: {
             areaStyle: {
@@ -209,16 +357,7 @@ export class ECommerceComponent {
           {
             name: 'Budget vs Spending',
             type: 'radar',
-            data: [
-              {
-                value: [4300, 10000, 28000, 35000, 50000, 19000,2000,5666],
-                name: 'BMW',
-              },
-              {
-                value: [5000, 14000, 28000, 31000, 42000, 21000,7888,6555],
-                name: 'Nestle',
-              },
-            ],
+            data: [],
           },
         ],
       };
@@ -229,31 +368,43 @@ export class ECommerceComponent {
 
 
   }
-  getCSV(){
-    let csvFile = this.search.toLowerCase();
-    this.httpService.get(`assets/data/${csvFile}.csv`, {responseType: 'text'})
-    .subscribe(
-        data => {
-          console.log(data);
-          let csvToRowArray = data.split("\n");
-          let userArray = [];
-            for (let index = 1; index < csvToRowArray.length - 1; index++) {
-              let row = csvToRowArray[index].split(",");
-              let Newrow = {"sentence" : row[0], "label": row[1],"greenwash": row[2].trim()}
-              userArray.push(Newrow);
-            }
-            console.log(userArray);
-            let sgd = new Array(17).fill(0);
-            userArray.forEach(element => {
-              sgd[element.label] += 1;
-              
-            });
-            this.barData = sgd;
-        },
-        error => {
-            console.log(error);
+  curateData(apiData){
+    let newObj = [];
+    let label = this.sgdLabels;
+    label.forEach((element,index) => {
+      if(apiData[index]){
+        let simple = {name : label[index], value: apiData[index]};
+        newObj[index] = simple;
+      }
+    });
+    console.log(label)
+    return {label,newObj}
+  }
+  getCSV(company?){
+    let csvFile = company ?? this.search.toLowerCase();
+    return this.httpService.get(`assets/data/${csvFile}.csv`, {responseType: 'text'})
+    .pipe(map(data => {
+      console.log(data);
+      let csvToRowArray = data.split("\n");
+      let userArray = [];
+        for (let index = 1; index < csvToRowArray.length - 1; index++) {
+          let row = csvToRowArray[index].split(",");
+          let Newrow = {"sentence" : row[0], "label": row[1],"greenwash": row[2].trim()}
+          userArray.push(Newrow);
         }
-    );
+        console.log(userArray);
+        let SDG = new Array(17).fill(0);
+        userArray.forEach(element => {
+          SDG[element.label] += 1;
+          
+        });
+        this.barOptions.series[0].data = SDG;
+        //this.spiderOptions.series[0].data[0].value = SDG;
+        //this.pieOptions.series[0].data = this.companyObj[this.search].SDG;        
+        return {excelRows : userArray, SDG : SDG}
+        
+        
+    }));
   }
   getUserActivity(period: string) {
     this.userActivityService.getUserActivityData(period)
@@ -265,9 +416,9 @@ export class ECommerceComponent {
   getTweets(){
     let company = "Nestle";
     let tag = "greenwashing";
-    this.httpService.get(`http://localhost:8000/api/me?tag=${tag}&company=${company}`).subscribe((data) => {
-      let uglyJson:any = data;
-      this.statuses = uglyJson.statuses;
-    });
+    // this.httpService.get(`http://localhost:8000/api/me?tag=${tag}&company=${company}`).subscribe((data) => {
+    //   let uglyJson:any = data;
+    //   this.statuses = uglyJson.statuses;
+    // });
   }
 }
