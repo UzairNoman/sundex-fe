@@ -1,19 +1,19 @@
-﻿sentence,label,greenwash
-This is a sentence,1,1
-We ensure education,2,0
-Ensure gender equality,2,0
-We save plastic use,3,0
-We avoid racism,4,0
-We love america,4,1
-This is a sentence,1,1
-We ensure education,2,0
-Ensure gender equality,2,0
-We save plastic use,3,0
-We avoid racism,4,0
-We love america,4,1
-This is a sentence,1,1
-We ensure education,2,0
-Ensure gender equality,2,0
-We save plastic use,3,0
-We avoid racism,4,0
-We love america,4,1
+﻿label,greenwash
+1,1
+2,0
+2,0
+3,0
+4,0
+4,1
+1,1
+2,0
+2,0
+3,0
+4,0
+4,1
+1,1
+2,0
+2,0
+3,0
+4,0
+4,1

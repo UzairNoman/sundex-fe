@@ -20,7 +20,7 @@ export class ECommerceComponent {
   search = 'default';
   barOptions: any;
   barData:any = [10, 52, 200, 43, 68, 85, 69,97,45,85,95, 49, 153, 92,54,45,34];
-  companyData=['BMW','Nestle'];
+  companyData=['Nestle','Airbus','Siemens','Maersk'];
   companyObj= {};
   curatedStuff = {label:[], newObj : [{name: "", value:""}]};
   themeSubscription: any;
@@ -325,7 +325,7 @@ export class ECommerceComponent {
 
       this.spiderOptions = {
         backgroundColor: echarts.bg,
-        color: [colors.danger, colors.warning],
+        color: [colors.danger, colors.warning,"#345564","#975564","#895588"],
         tooltip: {},
         legend: {
           data: this.companyData,
@@ -340,23 +340,23 @@ export class ECommerceComponent {
             },
           },
           indicator: [
-            { name: 'SDG1', max: 50 },
-            { name: 'SDG2', max: 50 },
-            { name: 'SDG3', max: 50 },
-            { name: 'SDG4', max: 50 },
-            { name: 'SDG5', max: 50 },
-            { name: 'SDG6', max: 50 },
-            { name: 'SDG7', max: 50 },
-            { name: 'SDG8', max: 50 },
-            { name: 'SDG9', max: 50 },
-            { name: 'SDG10', max: 50 },
-            { name: 'SDG11', max: 50 },
-            { name: 'SDG12', max: 50 },
-            { name: 'SDG13', max: 50 },
-            { name: 'SDG14', max: 50 },
-            { name: 'SDG15', max: 50 },
-            { name: 'SDG16', max: 50 },
-            { name: 'SDG17', max: 50 },
+            { name: 'SDG1', max: 20 },
+            { name: 'SDG2', max: 20 },
+            { name: 'SDG3', max: 20 },
+            { name: 'SDG4', max: 20 },
+            { name: 'SDG5', max: 20 },
+            { name: 'SDG6', max: 20 },
+            { name: 'SDG7', max: 20 },
+            { name: 'SDG8', max: 20 },
+            { name: 'SDG9', max: 20 },
+            { name: 'SDG10', max: 20 },
+            { name: 'SDG11', max: 20 },
+            { name: 'SDG12', max: 20 },
+            { name: 'SDG13', max: 20 },
+            { name: 'SDG14', max: 20 },
+            { name: 'SDG15', max: 20 },
+            { name: 'SDG16', max: 20 },
+            { name: 'SDG17', max: 20 },
           ],
           splitArea: {
             areaStyle: {
@@ -400,15 +400,19 @@ export class ECommerceComponent {
       let userArray = [];
         for (let index = 1; index < csvToRowArray.length - 1; index++) {
           let row = csvToRowArray[index].split(",");
-          let Newrow = {"sentence" : row[0], "label": row[1],"greenwash": row[2].trim()}
+          let Newrow = {"label": row[0],"greenwash": row[1]}
           userArray.push(Newrow);
         }
         console.log(userArray);
         let SDG = new Array(17).fill(0);
         let greenwashCount= 0;
         userArray.forEach(element => {
-
-          SDG[element.label] += 1;
+          if(element.label == "own"){
+            //SDG[17] += 1;
+          }
+          else{
+            SDG[+(element.label)-1] += 1;
+          } 
           if(+element.greenwash)
             greenwashCount +=1;    
           
