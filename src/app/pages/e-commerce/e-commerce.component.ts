@@ -39,7 +39,7 @@ export class ECommerceComponent {
                   let lowcompany = company.toLowerCase();
                   this.getCSV(lowcompany).subscribe(data => {
                     this.companyObj[lowcompany] = data;
-                    this.companyObj[lowcompany] = {data, filteredData : this.curateData(data.SDG)};
+                    this.companyObj[lowcompany] = {data, filteredData : this.curateData(data.SDG),companyname: company};
                     this.spiderOptions.series[0].data.push({name:company,value:this.companyObj[lowcompany].data.SDG});
                     this.stateService.trafficSubj.next({companySDG : this.companyObj[lowcompany].filteredData.newObj})
 

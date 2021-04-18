@@ -1,6 +1,6 @@
 <ng-container *ngIf="search == 'default'">
   
-  
+  <h2>Overview</h2>
   <!-- <div class="row">
     <div class="col-xxl-9">
       <div echarts [options]="pieOptions" class="echart"></div>
@@ -48,8 +48,8 @@
 </ng-container>
 
 
-<ng-container *ngIf="search == 'BMW'">
-  <h2>BMW</h2>
+<ng-container *ngIf="search != 'default'">
+  <h2>{{this.currentAssignment | json}}</h2>
   <div class="row">
     <div class="col-xxl-5">
   
@@ -73,7 +73,7 @@
   
 </ng-container>
 
-<ng-container *ngIf="search == 'Nestle'">
+<!-- <ng-container *ngIf="search == 'Nestle'">
   <h2>Nestle</h2>
   <div class="row">
     <div class="col-xxl-5">
@@ -96,7 +96,7 @@
     </div>
   </div>
   
-</ng-container>
+</ng-container> -->
 
 
 
