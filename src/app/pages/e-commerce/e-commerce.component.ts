@@ -26,6 +26,7 @@ export class ECommerceComponent {
   themeSubscription: any;
   pieOptions:any;
   spiderOptions:any;
+  currentAssignment;
   public change = new Subject<string>();
   sgdLabels: any = ['SDG1','SDG2','SDG3','SDG4','SDG5','SDG6','SDG7','SDG8','SDG9','SDG10','SDG11','SDG12','SDG13','SDG14','SDG15','SDG16','SDG17'];
 
@@ -38,10 +39,9 @@ export class ECommerceComponent {
                 this.companyData.forEach(company => {
                   let lowcompany = company.toLowerCase();
                   this.getCSV(lowcompany).subscribe(data => {
-                    this.companyObj[lowcompany] = data;
                     this.companyObj[lowcompany] = {data, filteredData : this.curateData(data.SDG),companyname: company};
                     this.spiderOptions.series[0].data.push({name:company,value:this.companyObj[lowcompany].data.SDG});
-                    this.stateService.trafficSubj.next({companySDG : this.companyObj[lowcompany].filteredData.newObj})
+                    
 
                     console.log(this.companyObj);
                   })
@@ -50,7 +50,16 @@ export class ECommerceComponent {
                 .subscribe((data: any) => {
                   console.log(data.term);
                   this.search = data.term;
+                  console.log(this.companyObj[this.search.toLowerCase()].data.greenwashCount);
+                  let searchedGW = this.companyObj[this.search.toLowerCase()].data.greenwashCount;
                   this.change.next(this.search);
+                  let rows = this.companyObj[this.search.toLowerCase()].data.excelRows.length;
+                  let per = (searchedGW/rows) * 100;
+                  this.stateService.trafficSubj.next([
+                    {title: "Total SDGs Found", value: rows, activeProgress: rows, description: "Rows processed"},
+                    {title: "Greenwashing", value: searchedGW, activeProgress: per, description: "More than last year (70%)"}
+
+                  ])
                   // if(this.search != 'default')
                   //   this.getCSV();
                 })
@@ -68,7 +77,7 @@ export class ECommerceComponent {
 
     this.change.subscribe(searchText =>{
       console.log(searchText,this.companyObj[searchText]);
-      let currentAssignment = this.companyObj[searchText.toLowerCase()];
+      this.currentAssignment = this.companyObj[searchText.toLowerCase()];
       this.themeSubscription = this.theme.getJsTheme().subscribe(config => {
         const colors: any = config.variables;
         const echarts: any = config.variables.echarts;
@@ -135,7 +144,7 @@ export class ECommerceComponent {
               type: 'bar',
               barCategoryGap: '5%',
               //barWidth: '30%',
-              data: currentAssignment.data.SDG,
+              data: this.currentAssignment.data.SDG,
             },
           ],
         };
@@ -151,7 +160,7 @@ export class ECommerceComponent {
           legend: {
             orient: 'vertical',
             left: 'left',
-            data: currentAssignment.filteredData.label,
+            data: this.currentAssignment.filteredData.label,
             textStyle: {
               color: echarts.textColor,
             },
@@ -162,7 +171,7 @@ export class ECommerceComponent {
               type: 'pie',
               radius: '80%',
               center: ['50%', '50%'],
-              data: currentAssignment.filteredData.newObj,
+              data: this.currentAssignment.filteredData.newObj,
               itemStyle: {
                 emphasis: {
                   shadowBlur: 10,
@@ -394,14 +403,18 @@ export class ECommerceComponent {
         }
         console.log(userArray);
         let SDG = new Array(17).fill(0);
+        let greenwashCount= 0;
         userArray.forEach(element => {
+
           SDG[element.label] += 1;
+          if(+element.greenwash)
+            greenwashCount +=1;    
           
         });
         this.barOptions.series[0].data = SDG;
         //this.spiderOptions.series[0].data[0].value = SDG;
         //this.pieOptions.series[0].data = this.companyObj[this.search].SDG;        
-        return {excelRows : userArray, SDG : SDG}
+        return {excelRows : userArray, SDG : SDG,greenwashCount}
         
         
     }));

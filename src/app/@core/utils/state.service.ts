@@ -6,7 +6,7 @@ import { NbLayoutDirectionService, NbLayoutDirection } from '@nebular/theme';
 
 @Injectable()
 export class StateService implements OnDestroy {
-  trafficSubj = new Subject<any>();
+  trafficSubj = new BehaviorSubject<any>({});
   protected layouts: any = [
     {
       name: 'One Column',
