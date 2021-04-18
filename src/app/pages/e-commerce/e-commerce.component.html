@@ -40,30 +40,44 @@
     </div>
   
   </div>
-  <div class="row">
-    <div class="col-xxl-5">
-      <ngx-traffic-reveal-card></ngx-traffic-reveal-card>
-    </div>
-  </div>
 </ng-container>
 
 
 <ng-container *ngIf="search != 'default'">
   <h2>{{this.currentAssignment.companyname}}</h2>
   <div class="row">
-    <div class="col-xxl-5">
-  
-      <ngx-traffic-reveal-card></ngx-traffic-reveal-card>
+    <div class="col-xxl-9">
+      <div style="height: 462px;" echarts [options]="barOptions" class="echart"></div>
     </div>
+    <div class="col-xxl-3">
   
-    <div class="col-xxl-7">
-      <div style="height: 350px;" echarts [options]="barOptions" class="echart"></div>
+      <nb-card size="medium">
+  
+        <nb-card-header>
+          <span>What tweeter says</span>
+        </nb-card-header>
+      
+        <nb-list class="user-activity-list">
+          <nb-list-item style="display: block;" *ngFor="let item of statuses">
+            <nb-user [name]="item.user.name" [title]="item.user.screen_name" [picture]="item.user.profile_image_url">
+            </nb-user>
+            <div class="" style="font-size: 10;">
+              {{item.created_at | date}}
+            </div>
+            <img style="width: 52px;border-radius: 15%;" *ngIf="item.extended_entities != null" src='{{item.extended_entities.media[0].media_url}}' />
+            <div>{{item.text}}</div>
+  
+      
+          </nb-list-item>
+        </nb-list>
+      
+      </nb-card>
     </div>
   </div>
   <br>
   <div class="row">
     <div class="col-xxl-9">
-      <div echarts [options]="pieOptions" class="echart"></div>
+      <div style="height: 462px;" echarts [options]="pieOptions" class="echart"></div>
     </div>
   
     <div class="col-xxl-3">

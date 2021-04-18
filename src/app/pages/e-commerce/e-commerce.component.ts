@@ -53,17 +53,18 @@ export class ECommerceComponent {
                   console.log(this.companyObj[this.search.toLowerCase()].data.greenwashCount);
                   let searchedGW = this.companyObj[this.search.toLowerCase()].data.greenwashCount;
                   this.change.next(this.search);
+                  this.getTweets([this.search]);
                   let rows = this.companyObj[this.search.toLowerCase()].data.excelRows.length;
                   let per = (searchedGW/rows) * 100;
                   this.stateService.trafficSubj.next([
-                    {title: "Total SDGs Found", value: rows, activeProgress: rows, description: "Rows processed"},
+                    {title: "SDGs Found", value: this.companyObj[this.search.toLowerCase()].filteredData.newObj.length, activeProgress: 17, description: "How many SDGs are present in report"},
                     {title: "Greenwashing", value: searchedGW, activeProgress: per, description: "More than last year (70%)"}
 
                   ])
                   // if(this.search != 'default')
                   //   this.getCSV();
                 })
-    this.getTweets();
+    this.getTweets(["Nestle","greenwashing"]);
     this.themeService.getJsTheme()
       .pipe(takeWhile(() => this.alive))
       .subscribe(theme => {
@@ -94,13 +95,14 @@ export class ECommerceComponent {
           grid: {
             left: '3%',
             right: '4%',
-            bottom: '3%',
+            bottom: '6%',
             containLabel: true,
           },
           xAxis: [
             {
-              name: 'SDG Goals',
+              name: 'SDGs',
               nameLocation: 'middle',
+              nameGap: 20,
               type: 'category',
               data: ['1', '2', '3', '4', '5', '6', '7','8','9','10','11', '12', '13', '14', '15','16','17'],
               axisTick: {
@@ -426,12 +428,24 @@ export class ECommerceComponent {
         this.userActivity = userActivityData;
       });
   }
-  getTweets(){
-    let company = "Nestle";
-    let tag = "greenwashing";
-    // this.httpService.get(`http://localhost:8000/api/me?tag=${tag}&company=${company}`).subscribe((data) => {
-    //   let uglyJson:any = data;
-    //   this.statuses = uglyJson.statuses;
-    // });
+  // getTweets(company= "Nestle",tag="greenwashing"){
+  //   this.httpService.get(`http://localhost:8000/api/me?tag=${tag}&company=${company}`).subscribe((data) => {
+  //     let uglyJson:any = data;
+  //     this.statuses = uglyJson.statuses;
+  //   });
+  // }
+  getTweets(arrayTags){
+    let str = "";
+    let arrayLen = arrayTags.length;
+    arrayTags.forEach((element,index) => {
+      str = str + "arg" + index + "=" + element;
+      if(index + 1 != arrayLen){
+        str = str + "&";
+      }
+    });
+    this.httpService.get(`http://localhost:8000/api/me?${str}`).subscribe((data) => {
+      let uglyJson:any = data;
+      this.statuses = uglyJson.statuses;
+    });
   }
 }
