@@ -57,7 +57,7 @@ export class ECommerceComponent {
                   let rows = this.companyObj[this.search.toLowerCase()].data.excelRows.length;
                   let per = (searchedGW/rows) * 100;
                   this.stateService.trafficSubj.next([
-                    {title: "SDGs Found", value: this.companyObj[this.search.toLowerCase()].filteredData.newObj.length, activeProgress: 17, description: "How many SDGs are present in report"},
+                    {title: "SDGs Found", value: this.companyObj[this.search.toLowerCase()].filteredData.newObjCount, activeProgress: 17, description: "How many SDGs are present in report"},
                     {title: "Greenwashing", value: searchedGW, activeProgress: per, description: "More than last year (70%)"}
 
                   ])
@@ -381,15 +381,17 @@ export class ECommerceComponent {
   }
   curateData(apiData){
     let newObj = [];
+    let newObjCount = 0;
     let label = this.sgdLabels;
     label.forEach((element,index) => {
       if(apiData[index]){
         let simple = {name : label[index], value: apiData[index]};
         newObj[index] = simple;
+        newObjCount += 1;
       }
     });
     console.log(label)
-    return {label,newObj}
+    return {label,newObj,newObjCount}
   }
   getCSV(company?){
     let csvFile = company ?? this.search.toLowerCase();
